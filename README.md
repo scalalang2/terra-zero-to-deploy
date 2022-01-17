@@ -49,3 +49,32 @@ $ ls -alh ./artifacts
 buntu ubuntu 127K Jan 17 10:44 terra_zero_to_deploy.wasm
 ```
 용량이 1.7M 에서 127K로 거의 10배 이상 용량이 작아진 것을 볼 수 있다.
+
+## 컨트랙트 배포하기
+빌드까지 완료했다면 이제 테라 블록체인으로 실제로 배포해보자. 본 예제에서 사용된 네트워크는 `bombay` 테스트넷을 이용했기 때문에 실제 테라로 배포하려면 메인넷 URL을 작서앻야 한다. `scripts/src/index.ts` 파일에서 LCDClient 객체를 생성할 때 정보를 메인넷으로 교체해주면된다.
+```typescript
+const terra = new LCDClient({
+    URL: 'https://bombay-fcd.terra.dev',
+    chainID: 'bombay-12',
+    gasPrices: '0.15uluna',
+    gasAdjustment: 1.2,
+});
+```
+
+그리고 지갑을 생성할 때 본인 계정으로 생성하도록 한다.
+```typescript
+const mk = new MnemonicKey({
+    // This is a my test mnemonic. NO NOT USE THIS FOR REAL MOENY
+    mnemonic: 'velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit',
+});
+
+const wallet = terra.wallet(mk);
+```
+
+실제 배포를 하려면 아래 명령어를 수행해주면 된다.
+```sh
+$ cd ./scripts && yarn install
+$ yarn start
+Contract address terra1uj7t0r0ny7jlu0c453d33darjsj9grlxsrl3n6
+Done in 21.25s
+```
