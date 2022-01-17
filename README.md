@@ -20,7 +20,7 @@ $ cargo intall cargo-generate --features vendored-openssl
 $ cargo install cargo-run-script
 ```
 
-#### 빌드하기
+## 빌드하기
 아래 명령어로 현재 작성한 스마트 컨트랙트를 빌드할 수 있다. 본 레포지토리에는 기본적으로 샘플 코드가 구성되어 있으므로 `git clone` 명령어로 레포지토리를 내려받은 다음 바로 빌드를 실행할 수 있다.
 ```
 $ cargo wasm
@@ -42,3 +42,10 @@ $ cargo run-script optimize
 ```
 $ cargo run-script optimize-arm64
 ```
+
+압축까지 모두 마쳤으면 이제는 `artifacts` 폴더안에 스마트 컨트랙트 바이너리가 생성된다.
+```
+$ ls -alh ./artifacts
+buntu ubuntu 127K Jan 17 10:44 terra_zero_to_deploy.wasm
+```
+용량이 1.7M 에서 127K로 거의 10배 이상 용량이 작아진 것을 볼 수 있다.
