@@ -2,10 +2,7 @@ import {
   LCDClient,
   MsgStoreCode,
   MnemonicKey,
-  MsgExecuteContract,
   MsgInstantiateContract,
-  Coin,
-  Coins,
 } from '@terra-money/terra.js';
 import * as fs from 'fs';
 
@@ -17,7 +14,7 @@ export async function main():Promise<void> {
             'velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit',
         });
 
-        // connect to localterra
+        // connect to bombay network
         const terra = new LCDClient({
             URL: 'https://bombay-fcd.terra.dev',
             chainID: 'bombay-12',
@@ -27,6 +24,7 @@ export async function main():Promise<void> {
 
         const wallet = terra.wallet(mk);
         console.log(wallet);
+
         // Create Contract code
         const storeCode = new MsgStoreCode(
             wallet.key.accAddress,
