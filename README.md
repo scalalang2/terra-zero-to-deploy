@@ -54,7 +54,9 @@ buntu ubuntu 127K Jan 17 10:44 terra_zero_to_deploy.wasm
 용량이 1.7M 에서 127K로 거의 10배 이상 용량이 작아진 것을 볼 수 있다.
 
 ## 컨트랙트 배포하기
-빌드까지 완료했다면 이제 테라 블록체인으로 실제로 배포해보자. 본 예제에서 사용된 네트워크는 `bombay` 테스트넷을 이용했기 때문에 실제 테라로 배포하려면 메인넷 URL을 작서앻야 한다. `scripts/src/index.ts` 파일에서 LCDClient 객체를 생성할 때 정보를 메인넷으로 교체해주면된다.
+빌드까지 완료했다면 이제 테라 블록체인으로 실제로 배포해보자. 본 예제에서 사용된 네트워크는 `bombay` 테스트넷을 이용했기 때문에 실제 테라로 배포하려면 메인넷 URL을 작성해야 한다. `scripts/src/index.ts` 파일에서 LCDClient 객체를 생성할 때 정보를 메인넷으로 교체해주면된다.
+
+만약, 테스트넷에서 현재 소유한 루나가 없다면 [이 링크](https://faucet.terra.money/)에서 테스트넷 루나를 받도록 하자.
 ```typescript
 const terra = new LCDClient({
     URL: 'https://bombay-fcd.terra.dev',
