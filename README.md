@@ -1,26 +1,29 @@
+### Language
+[[Korean]](./docs/korean.md)
+
 # Terra Zero To Deploy
-테라 블록체인에서 스마트 컨트랙트 작성하기 - 시작부터 배포까지
+Create a smart contract on Terra Blockchain - From zero to deployment.
 
-## 환경 설정
-윈도우 환경에서는 잘 동작하지 않기 때문에 윈도우에서는 WSL을 이용하도록 한다.
+## Environment Setting
+Since Cosmwasm does not work well in Windows, WSL must be needed to run on Windows.
 
-#### Rust 설치하기
+#### Install
 ```sh
-$ rustup default stable // rust 버전을 최신 안정화된 버전으로 돌린다.
-$ rustup target add wasm32-unknown-unknown // wasm을 설치한다.
+$ rustup default stable // Turn the rust version to lastest stable version.
+$ rustup target add wasm32-unknown-unknown // Install a wasm.
 ```
 
-템플릿 폴더에서 프로젝트를 구성하기 위해 `cargo-generate` 패키지를 설치한다.
+Install the 'cargo-generate' package to easily configure the proejct. It configure the project folder from the template.
 ```sh
 $ cargo intall cargo-generate --features vendored-openssl
 ```
 
-마지막으로 스마트 컨트랙트 파일 압축을 위해 아래 cargo-run-script 패키지를 설치한다. 이 패키지가 실제로 프로젝트를 압축하는데 쓰이는 건 아니고 `Cargo.toml`에 `[package.metadata.scripts]`에 정의된 압축 스크립트를 실행하는데 사용된다.
+Finally, Install the cargo-run-script package for compression of wasm file. This package doesn't actually compress a `.wasm` file, It is used to execute a compression script defined in '[package.metadata.scripts]' in 'Cargo.toml'.
 ```sh
 $ cargo install cargo-run-script
 ```
 
-## 빌드하기
+## Build
 아래 명령어로 현재 작성한 스마트 컨트랙트를 빌드할 수 있다. 본 레포지토리에는 기본적으로 샘플 코드가 구성되어 있으므로 `git clone` 명령어로 레포지토리를 내려받은 다음 바로 빌드를 실행할 수 있다.
 ```sh
 $ cargo wasm
