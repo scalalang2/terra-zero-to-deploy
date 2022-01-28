@@ -14,7 +14,11 @@ interface QueryOption {
 
 const router:QueryRouter[] = [{
     name: "get_count",
-    options: [],
+    description: "fetch count number.",
+    options: [{
+        name: "-c --contract",
+        description: "The name of contract you wanna query."
+    }],
     action: getCount
 }]
 

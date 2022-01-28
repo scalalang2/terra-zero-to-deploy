@@ -7,6 +7,25 @@ import exec_router from './exec/router';
 import path from 'path';
 import fs from 'fs';
 
+function build_query_commands(config: any) {
+    let queries = new commander.Command('query')
+        .action(() => {
+            queries.outputHelp();
+        });
+
+    query_router.forEach(el => {
+        let subcli = queries.command(el.name);
+
+        if (el.description) subcli.description(el.description);
+        for (let opt of el.options) {
+            subcli.option(opt.name, opt.description);
+        }
+        // cmd = cmd.action((...args) => el.action(config, ...args));
+        subcli.action(el.action)
+    })
+    return queries
+}
+
 // Load a configuration.
 let filename = path.join(__dirname, '../config.yml');
 let contents = fs.readFileSync(filename, 'utf8');
@@ -30,21 +49,7 @@ const deployCmd = program.command('deploy')
     });
 
 // query command
-const queryCmd = program.command('query')
-    .description("Send query message to the Terra blockchain.")
-    .action(() => {
-        queryCmd.outputHelp();
-    });
-
-query_router.forEach(el => {
-    let cmd = queryCmd.command(el.name);
-
-    if(el.description) cmd.description(el.description);
-    for(let opt of el.options) {
-        cmd.options(opt.name, opt.description);
-    }
-    cmd.action((...args) => el.action(config, ...args));
-})
+program.addCommand(build_query_commands(config));
 
 // execute transction command
 const execCmd = program.command('exec')
@@ -58,10 +63,10 @@ exec_router.forEach(el => {
 
     if(el.description) cmd.description(el.description);
     for(let opt of el.options) {
-        cmd.options(opt.name, opt.description);
+        cmd.option(opt.name, opt.description);
     }
     cmd.action((...args) => el.action(config, ...args));
 })
 
 program.parse(process.argv);
-if (!process.argv.length) program.outputHelpInformation();
+if (!process.argv.length) program.outputHelp();

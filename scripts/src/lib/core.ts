@@ -33,7 +33,7 @@ export const deploy = async (params:LoadWalletParams):Promise<void> => {
         // Create Contract code
         const storeCode = new MsgStoreCode(
             wallet.key.accAddress,
-            fs.readFileSync('../artifacts/terra_zero_to_deploy.wasm').toString('base64'),
+            fs.readFileSync('../artifacts/terra_zero_to_deploy-aarch64.wasm').toString('base64'),
         );
 
         const storeCodeTx = await wallet.createAndSignTx({
