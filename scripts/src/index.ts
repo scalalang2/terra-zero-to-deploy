@@ -1,77 +1,47 @@
-import {
-  LCDClient,
-  MsgStoreCode,
-  MnemonicKey,
-  MsgInstantiateContract,
-} from '@terra-money/terra.js';
-import * as fs from 'fs';
+import commander from 'commander';
+import lib from './lib';
 
-export async function main():Promise<void> {
-    try {
-        const mk = new MnemonicKey({
-            // This is a localTerra mnemonic. NO NOT USE THIS FOR REAL MOENY
-            mnemonic:
-            'velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit',
-        });
+import query_router from './query/router';
+import exec_router from './exec/router';
 
-        // connect to bombay network
-        const terra = new LCDClient({
-            URL: 'https://bombay-fcd.terra.dev',
-            chainID: 'bombay-12',
-            gasPrices: '0.15uluna',
-            gasAdjustment: 1.2,
-        });
+const program = new commander.Command();
 
-        const wallet = terra.wallet(mk);
-        console.log(wallet);
+const deployCmd = program.command('deploy')
+    .action(() => {
+        lib.core.deploy();
+    });
 
-        // Create Contract code
-        const storeCode = new MsgStoreCode(
-            wallet.key.accAddress,
-            fs.readFileSync('../artifacts/terra_zero_to_deploy.wasm').toString('base64'),
-        );
-        console.log("--- create MsgStoreCode ---")
+const queryCmd = program.command('query')
+    .description("Send query message to the Terra blockchain.")
+    .action(() => {
+        queryCmd.outputHelp();
+    });
 
-        const storeCodeTx = await wallet.createAndSignTx({
-            msgs: [storeCode],
-        });
+query_router.forEach(el => {
+    let cmd = queryCmd.command(el.name);
 
-        const storeCodeTxResult = await terra.tx.broadcast(storeCodeTx);
-        console.log(storeCodeTxResult);
-
-        const codeId = storeCodeTxResult.logs[0].events[1].attributes[1].value;
-        console.log('CodeId', codeId);
-
-        await new Promise((reoslve, reject) => {
-            console.log("waiting to be stable.")
-            setTimeout(() => {
-                reoslve({})
-            }, 5000)
-        })
-
-        let initMsg = {
-            count: 120
-        };
-
-        const instantiate = new MsgInstantiateContract(
-            wallet.key.accAddress, // owner
-            undefined, // admin address
-            34436, // code ID
-            { ...initMsg }, // InitMsg
-            {}, // init coins
-        );
-
-        const instantiateTx = await wallet.createAndSignTx({
-            msgs: [instantiate],
-        });
-
-        const instantiateTxResult = await terra.tx.broadcast(instantiateTx);
-        const contractAddress = instantiateTxResult.logs[0].events[0].attributes[2].value;
-        console.log('Contract address', contractAddress);
-    } catch(e) {
-        console.error("error occured during deployment.")
-        console.error(e);
+    if(el.description) cmd.description(el.description);
+    for(let opt of el.options) {
+        cmd.options(opt.name, opt.description);
     }
-}
+    cmd.action(el.action);
+})
 
-main();
+const execCmd = program.command('exec')
+    .description("Execute a method on smart contract from the Terra blockchain.")
+    .action(() => {
+        execCmd.outputHelp();
+    });
+
+exec_router.forEach(el => {
+    let cmd = execCmd.command(el.name);
+
+    if(el.description) cmd.description(el.description);
+    for(let opt of el.options) {
+        cmd.options(opt.name, opt.description);
+    }
+    cmd.action(el.action);
+})
+
+program.parse(process.argv);
+if (!process.argv.length) program.outputHelpInformation();
