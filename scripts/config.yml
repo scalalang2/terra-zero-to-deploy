@@ -1,0 +1,10 @@
+wallet:
+  mnemonic: velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit
+
+contracts:
+  - name: counter
+    codeId: 38015,
+    address: terra1uj7t0r0ny7jlu0c453d33darjsj9grlxsrl3n6
+  - name: artifacts
+    codeId: 38015,
+    address: terra1uj7t0r0ny7jlu0c453d33darjsj9grlxsrl3n6

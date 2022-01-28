@@ -3,25 +3,32 @@ import {
     MsgStoreCode,
     MnemonicKey,
     MsgInstantiateContract,
+    Wallet,
 } from '@terra-money/terra.js';
 
 import * as fs from 'fs';
 
-export const deploy:() => Promise<void> = async () => {
+export const terra = new LCDClient({
+    URL: 'https://bombay-fcd.terra.dev',
+    chainID: 'bombay-12',
+    gasPrices: '0.15uluna',
+    gasAdjustment: 1.2,
+});
+
+interface LoadWalletParams {
+    mnemonic: string;
+}
+
+export const loadWallet = (mnemonic:string):Wallet => {
+    const key = new MnemonicKey({ mnemonic: mnemonic });
+    const wallet = terra.wallet(key);
+    return wallet;
+}
+
+// Dapp development util functions.
+export const deploy = async (params:LoadWalletParams):Promise<void> => {
     try {
-        const mk = new MnemonicKey({
-            mnemonic: 'velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit',
-        });
-
-        // connect to bombay network
-        const terra = new LCDClient({
-            URL: 'https://bombay-fcd.terra.dev',
-            chainID: 'bombay-12',
-            gasPrices: '0.15uluna',
-            gasAdjustment: 1.2,
-        });
-
-        const wallet = terra.wallet(mk);
+        const wallet = loadWallet(params.mnemonic);
 
         // Create Contract code
         const storeCode = new MsgStoreCode(
@@ -41,7 +48,7 @@ export const deploy:() => Promise<void> = async () => {
             console.log("waiting to be stable.")
             setTimeout(() => {
                 reoslve({})
-            }, 5000)
+            }, 2000)
         })
 
         let initMsg = {
@@ -67,4 +74,22 @@ export const deploy:() => Promise<void> = async () => {
         console.error("error occured during deployment.")
         console.error(e);
     }
-}
+};
+
+// Query functions.
+interface QueryParams {
+    contractAddress: string;
+    msg: any;
+};
+
+export const query = async ({ contractAddress, msg }:QueryParams):Promise<void> => {
+    await terra.wasm.contractQuery(
+        contractAddress, 
+        { query: msg }
+    );
+};
+
+// Contract Execution functions..
+export const exec:(config:any, msg:any) => Promise<any> = async (config, msg) => {
+
+};
