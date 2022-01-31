@@ -46,7 +46,14 @@ function build_action_commands(config: any) {
             subcli.option(opt.name, opt.description);
         }
 
-        subcli.action((...args) => el.handler(config, ...args));
+        subcli.action(async (...args) => {
+            let ret = await el.handler(config, ...args);
+            console.info(`--------- action result: ---------`)
+            console.info(`action: ${el.name}`)
+            console.info();
+            console.info(ret);
+            console.info(`---------------------------------`)
+        });
     })
 
     return actionCmd

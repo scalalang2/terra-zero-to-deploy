@@ -4,6 +4,10 @@ import {
     MnemonicKey,
     MsgInstantiateContract,
     Wallet,
+    BlockTxBroadcastResult,
+    Coins,
+    CreateTxOptions,
+    MsgExecuteContract
 } from '@terra-money/terra.js';
 
 import * as fs from 'fs';
@@ -83,17 +87,33 @@ interface QueryParams {
     msg: object;
 };
 
+interface ActionParams {
+    contract: string;
+    msg: object;
+    coins?: Coins.Input,
+    options?: CreateTxOptions
+}
+
 export const query = async ({ contract, msg }:QueryParams):Promise<void> => {
     let addr = lib.config.contractAddrBy(contract)!;
     return await terra.wasm.contractQuery( addr, msg );
 };
 
 // Contract Execution functions..
-export const exec:(config:any, msg:any) => Promise<any> = async (config, msg) => {
+export const action = async (params: ActionParams):Promise<BlockTxBroadcastResult> => {
+    let addr = lib.config.contractAddrBy(params.contract)!;
+    let config = lib.config.getConfig();
+    let wallet = loadWallet(config.wallet.mnemonic);
 
+    const msgs = [
+        new MsgExecuteContract(
+            wallet.key.accAddress,
+            addr,
+            params.msg,
+            params.coins
+        ),
+    ];
+    const _options = params.options ? { ...params.options, msgs } : { msgs };
+    const tx = await wallet.createAndSignTx(_options);
+    return await terra.tx.broadcast(tx);
 };
-
-// Load configuration.
-export const getConfig:any = () => {
-
-}

@@ -2,7 +2,12 @@ import { Router } from './types';
 import lib from '../lib';
 
 const increment = async (config: any, name: any, options: any) => {
-    console.log("handle increment");
+    return lib.core.action({
+        contract: 'counter',
+        msg: {
+            increment: {}
+        }
+    })
 }
 
 const router: Router[] = [{
