@@ -4,7 +4,4 @@ wallet:
 contracts:
   - name: counter
     codeId: 38015,
-    address: terra1uj7t0r0ny7jlu0c453d33darjsj9grlxsrl3n6
-  - name: artifacts
-    codeId: 38015,
-    address: terra1uj7t0r0ny7jlu0c453d33darjsj9grlxsrl3n6
+    address: terra184ujwgdt7py67mjktegemsd6fs6gt8s0m6vjup

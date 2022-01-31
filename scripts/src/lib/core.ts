@@ -7,6 +7,7 @@ import {
 } from '@terra-money/terra.js';
 
 import * as fs from 'fs';
+import lib from '.';
 
 export const terra = new LCDClient({
     URL: 'https://bombay-fcd.terra.dev',
@@ -78,18 +79,21 @@ export const deploy = async (params:LoadWalletParams):Promise<void> => {
 
 // Query functions.
 interface QueryParams {
-    contractAddress: string;
-    msg: any;
+    contract: string;
+    msg: object;
 };
 
-export const query = async ({ contractAddress, msg }:QueryParams):Promise<void> => {
-    await terra.wasm.contractQuery(
-        contractAddress, 
-        { query: msg }
-    );
+export const query = async ({ contract, msg }:QueryParams):Promise<void> => {
+    let addr = lib.config.contractAddrBy(contract)!;
+    return await terra.wasm.contractQuery( addr, msg );
 };
 
 // Contract Execution functions..
 export const exec:(config:any, msg:any) => Promise<any> = async (config, msg) => {
 
 };
+
+// Load configuration.
+export const getConfig:any = () => {
+
+}
