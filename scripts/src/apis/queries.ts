@@ -1,8 +1,8 @@
 import { Router } from './types';
-import lib from '../lib';
+import { ICoreModule } from '../lib/core';
 
-const getCount = async (config: any, name: any, options: any) => {
-    return await lib.core.query({
+const getCount = async (config: any, core: ICoreModule, name: any, options: any) => {
+    return await core.query({
         contract: 'counter',
         msg: { get_count: {} }
     });

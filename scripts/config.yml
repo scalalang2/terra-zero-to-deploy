@@ -1,5 +1,18 @@
+terra:
+  url: https://bombay-fcd.terra.dev
+  chainID: bombay-12
+  gasPrices: 0.15uluna
+  gasAdjustment: 1.2
+
+deployment:
+  - name: counter
+    path: terra_zero_to_deploy-aarch64.wasm
+    initMsg: 
+      count: 120
+
 wallet:
-  mnemonic: velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit
+  - name: tester
+    mnemonic: velvet borrow tone ice outer sock humor vault coast drastic number cannon flower grass arrange shoulder victory cover thought exercise type camp submit fit
 
 contracts:
   - name: counter

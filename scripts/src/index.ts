@@ -4,6 +4,10 @@ import lib from './lib';
 import query_router from './apis/queries';
 import action_router from './apis/actions';
 
+// Load a configuration.
+let config = lib.config.getConfig();
+let coreModule = new lib.core.CoreModule(config);
+
 function build_query_commands(config: any) {
     let queries = new commander.Command('query')
         .description("Query a data from Terra blockchain.")
@@ -19,7 +23,7 @@ function build_query_commands(config: any) {
             subcli.option(opt.name, opt.description);
         }
         subcli.action(async (...args) => {
-            let ret = await el.handler(config, ...args);
+            let ret = await el.handler(config, coreModule, ...args);
             console.info(`--------- query result: ---------`)
             console.info(`query: ${el.name}`)
             console.info();
@@ -47,7 +51,7 @@ function build_action_commands(config: any) {
         }
 
         subcli.action(async (...args) => {
-            let ret = await el.handler(config, ...args);
+            let ret = await el.handler(config, coreModule, ...args);
             console.info(`--------- action result: ---------`)
             console.info(`action: ${el.name}`)
             console.info();
@@ -59,14 +63,11 @@ function build_action_commands(config: any) {
     return actionCmd
 }
 
-// Load a configuration.
-let config = lib.config.getConfig();
-
 // Define a program.
 const program = new commander.Command();
 
 // debug command
-const debug = program.command('debug')
+program.command('debug')
     .description('this is only for debugging.')
     .action(() => {
         console.info("loaded configuration:")
@@ -74,9 +75,11 @@ const debug = program.command('debug')
     })
 
 // deployment command
-const deployCmd = program.command('deploy')
-    .action(() => {
-        lib.core.deploy(config.wallet.mnemonic);
+program.command('deploy')
+    .requiredOption('-w --wallet', 'wallet name in config.yml')
+    .requiredOption('-m --wasm', 'wasm file name in config.yml')
+    .action((name, options) => {
+        coreModule.deploy(options.args[0], options.args[1])
     });
 
 // query command

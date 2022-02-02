@@ -1,8 +1,9 @@
+import { ICoreModule } from '../lib/core';
 export interface Router {
     name: string;
     description?: string;
     options: Option[];
-    handler: (...args: any[]) => any | Promise<any>;
+    handler: (config:any, coreModule: ICoreModule, ...args: any[]) => any | Promise<any>;
 };
 
 export interface Option {

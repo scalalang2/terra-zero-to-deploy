@@ -13,39 +13,89 @@ import {
 import * as fs from 'fs';
 import lib from '.';
 
-export const terra = new LCDClient({
-    URL: 'https://bombay-fcd.terra.dev',
-    chainID: 'bombay-12',
-    gasPrices: '0.15uluna',
-    gasAdjustment: 1.2,
-});
+interface QueryParams {
+    contract: string;
+    msg: object;
+};
 
-interface LoadWalletParams {
-    mnemonic: string;
+interface ActionParams {
+    contract: string;
+    wallet: string;
+    msg: object;
+    coins?: Coins.Input,
+    options?: CreateTxOptions
 }
 
-export const loadWallet = (mnemonic:string):Wallet => {
-    const key = new MnemonicKey({ mnemonic: mnemonic });
-    const wallet = terra.wallet(key);
-    return wallet;
+export interface ICoreModule {
+    config: any;
+    client: LCDClient;
+    buildTerraClient(config:any):LCDClient;
+    loadWallet(name: string): Wallet | null;
+    deploy(walletName: string, wasmFileName: string):Promise<void>;
+    query(params:QueryParams):Promise<any>;
+    action(params: ActionParams): Promise<BlockTxBroadcastResult>;
 }
 
-// Dapp development util functions.
-export const deploy = async (params:LoadWalletParams):Promise<void> => {
-    try {
-        const wallet = loadWallet(params.mnemonic);
+export class CoreModule implements ICoreModule {
+    config: any;
+    client:LCDClient;
+
+    constructor(config:any){
+        this.config = config;
+        this.client = this.buildTerraClient(config);
+    }
+
+    buildTerraClient(config:any):LCDClient {
+        return new LCDClient({
+            URL: config.terra.url,
+            chainID: config.terra.chainID,
+            gasPrices: config.terra.gasPrices,
+            gasAdjustment: config.terra.gasAdjustment
+        })
+    }
+
+    loadWallet(name: string):Wallet | null {
+        let mnemonic = null;
+        for (let el of this.config.wallet) {
+            if (el.name === name) {
+                mnemonic = el.mnemonic;
+                break;
+            }
+        }
+
+        if(mnemonic === null) return null;
+        const key = new MnemonicKey({ mnemonic: mnemonic });
+        const wallet = this.client.wallet(key);
+        return wallet;
+    }
+
+    async deploy(walletName: string, wasmFileName: string):Promise<void> {
+        let wallet = this.loadWallet(walletName);
+        if(wallet == null) throw new Error(`no wallet exists for '${walletName}'`);
 
         // Create Contract code
+        let wasmFilePath = null;
+        let initMsg = null;
+        for(let el of this.config.deployment) {
+            if(el.name === wasmFileName) {
+                wasmFilePath = el.path;
+                initMsg = el.initMsg;
+                break;
+            }
+        }
+
+        if (wasmFilePath == null) throw new Error(`no wasm file exists: ${wasmFileName}`);
+
         const storeCode = new MsgStoreCode(
             wallet.key.accAddress,
-            fs.readFileSync('../artifacts/terra_zero_to_deploy-aarch64.wasm').toString('base64'),
+            fs.readFileSync(`../artifacts/${wasmFilePath}`).toString('base64'),
         );
 
         const storeCodeTx = await wallet.createAndSignTx({
             msgs: [storeCode],
         });
 
-        const storeCodeTxResult = await terra.tx.broadcast(storeCodeTx);
+        const storeCodeTxResult = await this.client.tx.broadcast(storeCodeTx);
         const codeId = storeCodeTxResult.logs[0].events[1].attributes[1].value;
         console.log('CodeId: ', codeId);
 
@@ -55,10 +105,6 @@ export const deploy = async (params:LoadWalletParams):Promise<void> => {
                 reoslve({})
             }, 2000)
         })
-
-        let initMsg = {
-            count: 120
-        };
 
         const instantiate = new MsgInstantiateContract(
             wallet.key.accAddress, // owner
@@ -72,48 +118,31 @@ export const deploy = async (params:LoadWalletParams):Promise<void> => {
             msgs: [instantiate],
         });
 
-        const instantiateTxResult = await terra.tx.broadcast(instantiateTx);
+        const instantiateTxResult = await this.client.tx.broadcast(instantiateTx);
         const contractAddress = instantiateTxResult.logs[0].events[0].attributes[2].value;
         console.log('Contract address: ', contractAddress);
-    } catch(e) {
-        console.error("error occured during deployment.")
-        console.error(e);
     }
-};
 
-// Query functions.
-interface QueryParams {
-    contract: string;
-    msg: object;
-};
+    async query({ contract, msg }:QueryParams):Promise<any> {
+        let addr = lib.config.contractAddrBy(contract)!;
+        return await this.client.wasm.contractQuery(addr, msg);
+    }
 
-interface ActionParams {
-    contract: string;
-    msg: object;
-    coins?: Coins.Input,
-    options?: CreateTxOptions
+    async action(params:ActionParams):Promise<BlockTxBroadcastResult> {
+        let addr = lib.config.contractAddrBy(params.contract)!;
+        let config = lib.config.getConfig();
+        let wallet = this.loadWallet(params.wallet)!;
+
+        const msgs = [
+            new MsgExecuteContract(
+                wallet.key.accAddress,
+                addr,
+                params.msg,
+                params.coins
+            ),
+        ];
+        const _options = params.options ? { ...params.options, msgs } : { msgs };
+        const tx = await wallet.createAndSignTx(_options);
+        return await this.client.tx.broadcast(tx);
+    }
 }
-
-export const query = async ({ contract, msg }:QueryParams):Promise<void> => {
-    let addr = lib.config.contractAddrBy(contract)!;
-    return await terra.wasm.contractQuery( addr, msg );
-};
-
-// Contract Execution functions..
-export const action = async (params: ActionParams):Promise<BlockTxBroadcastResult> => {
-    let addr = lib.config.contractAddrBy(params.contract)!;
-    let config = lib.config.getConfig();
-    let wallet = loadWallet(config.wallet.mnemonic);
-
-    const msgs = [
-        new MsgExecuteContract(
-            wallet.key.accAddress,
-            addr,
-            params.msg,
-            params.coins
-        ),
-    ];
-    const _options = params.options ? { ...params.options, msgs } : { msgs };
-    const tx = await wallet.createAndSignTx(_options);
-    return await terra.tx.broadcast(tx);
-};

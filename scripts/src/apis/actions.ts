@@ -1,9 +1,10 @@
 import { Router } from './types';
-import lib from '../lib';
+import { ICoreModule } from '../lib/core';
 
-const increment = async (config: any, name: any, options: any) => {
-    return lib.core.action({
+const increment = async (config: any, core: ICoreModule, name: any, options: any) => {
+    return core.action({
         contract: 'counter',
+        wallet: 'tester',
         msg: {
             increment: {}
         }
