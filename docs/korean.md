@@ -50,6 +50,15 @@ buntu ubuntu 127K Jan 17 10:44 terra_zero_to_deploy.wasm
 ```
 용량이 1.7M 에서 127K로 거의 10배 이상 용량이 작아진 것을 볼 수 있다.
 
+(참고)맥북 M1칩을 사용하는 사람이 아니라면 scripts/config.yml에서 아래 deployment 부분의 path를 아래와 같이 수정해야 동작한다.
+terra_zero_to_deploy-arm64.wasm => terra_zero_to_deploy.wasm
+```yml
+deployment:
+  - name: counter
+    path: terra_zero_to_deploy.wasm
+    initMsg: 
+      count: 120
+```
 ## 컨트랙트 배포하기
 빌드까지 완료했다면 이제 테라 블록체인으로 실제로 배포해보자. 본 예제에서 사용된 네트워크는 `bombay` 테스트넷을 이용했기 때문에 실제 테라로 배포하려면 메인넷 URL을 작서앻야 한다. `scripts/src/index.ts` 파일에서 LCDClient 객체를 생성할 때 정보를 메인넷으로 교체해주면된다.
 ```typescript
